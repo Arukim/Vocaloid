@@ -5,6 +5,7 @@ import 'dart:async';
 class Vocaloid
 {
   AudioContext ac;
+  GainNode gain;
   String text;
   List<OscillatorNode> instruments = new List<OscillatorNode>();
   
@@ -16,20 +17,22 @@ class Vocaloid
     ..type = OscillatorNode.SINE.toString()
     ..frequency.value = 1000;
     
-    GainNode gain = ac.createGain();
+    gain = ac.createGain();
     osc.connect(gain, 0, 0);
 
     gain.gain.value = 0.05;
-    gain.connect(ac.destination,0,0);
+
+    osc.start(0);
     instruments.add(osc);
   }
   int pos;
   String code;
   Timer timer;
   void cbcTimer(){
-    if(code.length == 0){
-      instruments[0].stop(0);
+    if(pos == code.length){
+      gain.disconnect(0);
       timer.cancel();
+      return;
     }
     if(code.substring(pos, pos + 1) == '{'){
       instruments[0].frequency.value += 100;
@@ -42,7 +45,8 @@ class Vocaloid
   }
   
   void Play(String text){
-    instruments[0].start(0);
+
+    gain.connect(ac.destination,0,0);
     code = text;
     pos = 0;
     timer = new Timer.periodic(new Duration(milliseconds : 5), (Timer timer) => cbcTimer());
