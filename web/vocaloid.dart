@@ -4,13 +4,35 @@ import 'dart:async';
 
 class Vocaloid
 {
+  int baseDuration = 25;
+  
   AudioContext ac;
   GainNode gain;
   String text;
   List<OscillatorNode> instruments = new List<OscillatorNode>();
   
-  
+  int mainThemeState = 0;
+   void cbcMainTheme(){
+     if(mainThemeState % 4 == 0){
+       gain.gain.value = 0;
+       // instruments[0].stop(0);
+       // instruments[0].disconnect(0);
+     }else{
+     //  instruments[0].start(0);
+      // instruments[0].connect(gain, 0,0);
+       gain.gain.value = 0.05;
+       if(mainThemeState % 32 == 1){
+         gain.gain.value += 0.05;
+         //instruments[0].frequency.value += 50;
+       }else if(mainThemeState % 32 == 5){
+         gain.gain.value -= 0.05;
+         //instruments[0].frequency.value -= 50;
+       }
+     } 
+     mainThemeState++;
+   }
   Vocaloid(){
+    
     ac = new AudioContext();
     OscillatorNode osc = ac.createOscillator();
     osc
@@ -24,6 +46,9 @@ class Vocaloid
 
     osc.start(0);
     instruments.add(osc);
+
+    
+    Timer mainTheme = new Timer.periodic(new Duration(milliseconds : baseDuration), (Timer timer) => cbcMainTheme());
   }
   int pos;
   String code;
